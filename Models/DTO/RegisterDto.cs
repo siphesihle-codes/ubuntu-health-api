@@ -31,7 +31,7 @@ namespace ubuntu_health_api.Models.DTO
 
     [Required(ErrorMessage = "Role is required")]
     [RegularExpression(@"^(admin|doctor|nurse|receptionist)$", ErrorMessage = "Role must be admin, doctor, nurse, or receptionist")]
-    public string? Role { get; set; }
+    public required string Role { get; set; }
 
     [StringLength(100, ErrorMessage = "Specialty cannot exceed 100 characters")]
     public string? Specialty { get; set; }

@@ -57,11 +57,6 @@ namespace ubuntu_health_api.Middleware
           response.Message = unauthorizedEx.Message;
           break;
 
-        case UnauthorizedAccessException unauthorizedEx:
-          response.StatusCode = (int)HttpStatusCode.Unauthorized;
-          response.Message = "Unauthorized access";
-          break;
-
         default:
           response.StatusCode = (int)HttpStatusCode.InternalServerError;
           response.Message = "An internal server error occurred";

@@ -24,7 +24,7 @@ A comprehensive multi-tenant healthcare management API built with ASP.NET Core, 
 
 - **.NET 8.0**
 - **ASP.NET Core Web API**
-- **Entity Framework Core** (SQL Server)
+- **Entity Framework Core** (SQLite)
 - **AutoMapper** (Object mapping)
 - **JWT Authentication**
 - **xUnit** (Unit testing)
@@ -34,7 +34,7 @@ A comprehensive multi-tenant healthcare management API built with ASP.NET Core, 
 ## 📋 Prerequisites
 
 - .NET 8.0 SDK
-- SQL Server (LocalDB or full instance)
+- `dotnet-ef` global tool (`dotnet tool install --global dotnet-ef --version 8.*`)
 - Visual Studio 2022 or VS Code
 - Git
 
@@ -46,19 +46,34 @@ git clone https://github.com/yourusername/ubuntu-health-api.git
 cd ubuntu-health-api
 ```
 
-### 2. Database Setup
-```bash
-# Update connection string in appsettings.json
-# Run migrations
-dotnet ef database update
-```
+All subsequent commands run from the `ubuntu-health-api` project directory (the one containing `ubuntu-health-api.csproj`).
 
-### 3. Install Dependencies
+### 2. Install Dependencies
 ```bash
 dotnet restore
 ```
 
-### 4. Run the Application
+### 3. Configure Environment Variables
+
+The app uses [DotNetEnv](https://github.com/tonerdo/dotnet-env) to load secrets from a `.env` file at startup. Create `ubuntu-health-api/.env` with at least the JWT secret:
+
+```
+JWT__Secret=replace-with-a-long-random-string-at-least-32-chars
+JWT__ValidIssuer=localhost
+JWT__ValidAudience=localhost
+```
+
+The double underscore (`__`) is how ASP.NET Core maps environment variables to nested config keys (`JWT:Secret`).
+
+### 4. Database Setup
+
+The project uses SQLite, which stores data in a local `App.db` file. No database server required. Apply the existing migrations:
+
+```bash
+dotnet ef database update
+```
+
+### 5. Run the Application
 ```bash
 dotnet run
 ```
@@ -110,10 +125,10 @@ The API will be available at `https://localhost:7000` (HTTPS) or `http://localho
 
 ## 🔧 Configuration
 
-### Environment Variables
+### Environment Variables (`.env`)
 ```bash
-# Database
-ConnectionStrings__DefaultConnection="Server=(localdb)\\mssqllocaldb;Database=UbuntuHealthDb;Trusted_Connection=true;"
+# Database (optional override; defaults to App.db in appsettings.json)
+ConnectionStrings__DefaultConnection="Data Source=App.db"
 
 # JWT Settings
 JWT__Secret="your-super-secret-key-here"
@@ -128,12 +143,11 @@ Serilog__MinimumLevel="Information"
 ```json
 {
   "ConnectionStrings": {
-    "DefaultConnection": "Server=(localdb)\\mssqllocaldb;Database=UbuntuHealthDb;Trusted_Connection=true;"
+    "DefaultConnection": "Data Source=App.db"
   },
   "JWT": {
-    "Secret": "your-super-secret-key-here",
-    "ValidIssuer": "UbuntuHealthAPI",
-    "ValidAudience": "UbuntuHealthUsers"
+    "ValidIssuer": "localhost",
+    "ValidAudience": "localhost"
   },
   "Logging": {
     "LogLevel": {
@@ -143,6 +157,8 @@ Serilog__MinimumLevel="Information"
   }
 }
 ```
+
+`JWT:Secret` is intentionally not committed; supply it via `.env` or a real secret store.
 
 ### Security
 - JWT token authentication

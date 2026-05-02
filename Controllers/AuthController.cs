@@ -92,15 +92,9 @@ namespace ubuntu_health_api.Controllers
           Message = "User already exists!",
         });
 
-      string tenantId;
-      if (string.IsNullOrEmpty(request.TenantId))
-      {
-        tenantId = $"org-{Guid.NewGuid().ToString()[..8]}";
-      }
-      else
-      {
-        tenantId = request.TenantId;
-      }
+      var tenantId = string.IsNullOrEmpty(request.TenantId)
+        ? $"org-{Guid.NewGuid().ToString()[..8]}"
+        : request.TenantId;
 
 
       var user = new ApplicationUser
@@ -158,7 +152,9 @@ namespace ubuntu_health_api.Controllers
       }
 
       var currentUserEmail = User.FindFirst(ClaimTypes.Email)?.Value;
+      if (currentUserEmail == null) return Unauthorized();
       var currentUser = await _userManager.FindByEmailAsync(currentUserEmail);
+      if (currentUser == null) return Unauthorized();
 
       if (User.IsInRole("admin") && user.TenantId != currentUser.TenantId)
       {
@@ -223,7 +219,9 @@ namespace ubuntu_health_api.Controllers
       }
 
       var currentUserEmail = User.FindFirst(ClaimTypes.Email)?.Value;
+      if (currentUserEmail == null) return Unauthorized();
       var currentUser = await _userManager.FindByEmailAsync(currentUserEmail);
+      if (currentUser == null) return Unauthorized();
 
       if (User.IsInRole("admin") && user.TenantId != currentUser.TenantId)
       {
@@ -255,15 +253,6 @@ namespace ubuntu_health_api.Controllers
       foreach (var role in request.Roles)
       {
         var result = await _userManager.RemoveFromRoleAsync(user, role);
-        if (!result.Succeeded)
-        {
-          return BadRequest(new AuthResponseDto
-          {
-            IsSuccess = false,
-            Message = string.Join(", ", result.Errors.Select(e => e.Description))
-          });
-        }
-
         if (!result.Succeeded)
         {
           return BadRequest(new AuthResponseDto
@@ -350,7 +339,7 @@ namespace ubuntu_health_api.Controllers
       var authClaims = new List<Claim>
       {
         new(ClaimTypes.Email, user.Email ?? string.Empty),
-        new("TenantId", user.TenantId),
+        new("TenantId", user.TenantId ?? string.Empty),
         new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
       };
 
@@ -376,7 +365,7 @@ namespace ubuntu_health_api.Controllers
     private JwtSecurityToken GenerateJwtToken(List<Claim> authClaims)
     {
       var authSigningKey = new SymmetricSecurityKey(
-        Encoding.UTF8.GetBytes(_configuration["JWT:Secret"])
+        Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]!)
       );
 
       var token = new JwtSecurityToken(

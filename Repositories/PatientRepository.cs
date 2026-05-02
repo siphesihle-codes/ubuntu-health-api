@@ -9,11 +9,11 @@ namespace ubuntu_health_api.Repositories
   {
     private readonly AppDbContext _dbContext = dbContext;
 
-    public async Task<IEnumerable<Patient>> GetAllPatientsAsync(string tenantId)
+    public async Task<IEnumerable<Patient>> GetAllPatientsAsync(string tenantId, CancellationToken cancellationToken)
     {
       return await _dbContext.Patients
         .Where(p => p.TenantId == tenantId)
-        .ToListAsync();
+        .ToListAsync(cancellationToken);
     }
 
     public async Task<Patient> GetPatientByIdAsync(int id, string tenantId)

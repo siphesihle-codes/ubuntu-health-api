@@ -22,15 +22,19 @@ namespace ubuntu_health_api.Services
       return _mapper.Map<IEnumerable<PatientResponseDto>>(patients);
     }
 
-    public async Task<PatientResponseDto> GetPatientByIdAsync(int id, string tenantId)
+    public async Task<PatientResponseDto> GetPatientByIdAsync(int id, string tenantId, CancellationToken cancellationToken = default)
     {
+      cancellationToken.ThrowIfCancellationRequested();
+
       var patient = await _patientRepository.GetPatientByIdAsync(id, tenantId) ??
       throw new KeyNotFoundException("Patient not found.");
       return _mapper.Map<PatientResponseDto>(patient);
     }
 
-    public async Task<PatientResponseDto> AddPatientAsync(PatientDto createDto, string tenantId)
+    public async Task<PatientResponseDto> AddPatientAsync(PatientDto createDto, string tenantId, CancellationToken cancellationToken = default)
     {
+      cancellationToken.ThrowIfCancellationRequested();
+
       var patient = _mapper.Map<Patient>(createDto);
       patient.TenantId = tenantId;
       patient.CreatedAt = DateTime.UtcNow;
@@ -41,8 +45,9 @@ namespace ubuntu_health_api.Services
       return _mapper.Map<PatientResponseDto>(patient);
     }
 
-    public async Task<PatientResponseDto> UpdatePatientAsync(int id, PatientDto updateDto, string tenantId)
+    public async Task<PatientResponseDto> UpdatePatientAsync(int id, PatientDto updateDto, string tenantId, CancellationToken cancellationToken = default)
     {
+      cancellationToken.ThrowIfCancellationRequested();
 
       var existingPatient = await _patientRepository.GetPatientByIdAsync(id, tenantId)
         ?? throw new KeyNotFoundException("Patient not found");
@@ -52,8 +57,10 @@ namespace ubuntu_health_api.Services
       return _mapper.Map<PatientResponseDto>(existingPatient);
     }
 
-    public async Task<bool> DeletePatientAsync(int id, string tenantId)
+    public async Task<bool> DeletePatientAsync(int id, string tenantId, CancellationToken cancellationToken = default)
     {
+      cancellationToken.ThrowIfCancellationRequested();
+
       var patient = await _patientRepository.GetPatientByIdAsync(id, tenantId);
       if (patient == null)
       {
