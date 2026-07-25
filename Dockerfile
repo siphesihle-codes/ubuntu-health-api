@@ -1,7 +1,10 @@
 # Runtime image (small)
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
 WORKDIR /app
-EXPOSE 80
+# Render routes traffic to port 10000 by default. The .NET base image would
+# otherwise listen on 8080, so bind Kestrel to 10000 here to match.
+ENV ASPNETCORE_URLS=http://0.0.0.0:10000
+EXPOSE 10000
 
 # Build image (SDK)
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
