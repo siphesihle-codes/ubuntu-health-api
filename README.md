@@ -191,7 +191,7 @@ Serilog__MinimumLevel="Information"
 
 ## 🔒 Security Considerations
 
-- All endpoints require authentication (except registration/login)
+- All endpoints require authentication
 - Tenant isolation prevents cross-tenant data access
 - Input validation prevents malicious data
 - Rate limiting prevents API abuse

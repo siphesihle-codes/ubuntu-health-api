@@ -2,11 +2,6 @@
 bin/
 obj/
 
-# Ignore local database files
-App.db
-App.db-shm
-App.db-wal
-
 # Ignore environment variables
 .env
 

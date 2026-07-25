@@ -13,21 +13,14 @@ using DotNetEnv;
 
 DotNetEnv.Env.Load();
 
-Console.WriteLine($"DEBUG (DotNetEnv): JWT_SECRET from Environment.GetEnvironmentVariable: '{Environment.GetEnvironmentVariable("JWT_SECRET")}'");
-Console.WriteLine($"DEBUG (DotNetEnv): JWT_VALIDISSUER from Environment.GetEnvironmentVariable: '{Environment.GetEnvironmentVariable("JWT_VALIDISSUER")}'");
-Console.WriteLine($"DEBUG (DotNetEnv): JWT_VALIDAUDIENCE from Environment.GetEnvironmentVariable: '{Environment.GetEnvironmentVariable("JWT_VALIDAUDIENCE")}'");
-
 var builder = WebApplication.CreateBuilder(args);
 
-Console.WriteLine($"DEBUG (Configuration): JWT:Secret from builder.Configuration: '{builder.Configuration["JWT:Secret"]}'");
-Console.WriteLine($"DEBUG (Configuration): JWT:ValidIssuer from builder.Configuration: '{builder.Configuration["JWT:ValidIssuer"]}'");
-Console.WriteLine($"DEBUG (Configuration): JWT:ValidAudience from builder.Configuration: '{builder.Configuration["JWT:ValidAudience"]}'");
 var jwtSecret = builder.Configuration["JWT:Secret"];
 var issuer = builder.Configuration["JWT:ValidIssuer"];
 
 builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddEntityFrameworkStores<AppDbContext>()
