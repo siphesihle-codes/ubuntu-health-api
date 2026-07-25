@@ -82,6 +82,7 @@ builder.Services.AddScoped<IInvoiceRepository, InvoiceRepository>();
 builder.Services.AddScoped<IClinicalNoteService, ClinicalNoteService>();
 builder.Services.AddScoped<IClinicalNoteRepository, ClinicalNoteRepository>();
 builder.Services.AddControllers();
+builder.Services.AddHealthChecks();
 
 var app = builder.Build();
 
@@ -116,5 +117,6 @@ app.UseCors("AllowAllOrigins");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+app.MapHealthChecks("/healthz");
 
 app.Run();
