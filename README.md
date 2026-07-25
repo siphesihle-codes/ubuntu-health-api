@@ -42,7 +42,7 @@ A comprehensive multi-tenant healthcare management API built with ASP.NET Core, 
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/yourusername/ubuntu-health-api.git
+git clone https://github.com/siphesihle-codes/ubuntu-health-api.git
 cd ubuntu-health-api
 ```
 
