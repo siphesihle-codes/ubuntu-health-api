@@ -10,11 +10,11 @@ EXPOSE 10000
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 COPY . .
-RUN dotnet restore
-RUN dotnet publish -c Release -o publish
+RUN dotnet restore ubuntu-health-api.csproj
+RUN dotnet publish ubuntu-health-api.csproj -c Release -o publish
 
 # Final image
 FROM base AS final
 WORKDIR /app
 COPY --from=build /src/publish .
-ENTRYPOINT ["dotnet", "ubuntu_health_api.dll"]
+ENTRYPOINT ["dotnet", "ubuntu-health-api.dll"]
