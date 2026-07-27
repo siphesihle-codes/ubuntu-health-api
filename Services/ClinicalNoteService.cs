@@ -24,10 +24,11 @@ namespace ubuntu_health_api.Services
       return _mapper.Map<ClinicalNoteResponseDto>(clinicalNote);
     }
 
-    public async Task<ClinicalNoteResponseDto> AddClinicalNoteAsync(ClinicalNoteCreateDto createDto, string tenantId)
+    public async Task<ClinicalNoteResponseDto> AddClinicalNoteAsync(ClinicalNoteCreateDto createDto, string tenantId, string doctorId)
     {
       var clinicalNote = _mapper.Map<ClinicalNote>(createDto);
       clinicalNote.TenantId = tenantId;
+      clinicalNote.DoctorId = doctorId;
       clinicalNote.CreatedAt = DateTime.UtcNow;
       clinicalNote.UpdatedAt = DateTime.UtcNow;
 

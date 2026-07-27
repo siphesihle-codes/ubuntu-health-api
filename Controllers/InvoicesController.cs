@@ -51,9 +51,8 @@ namespace ubuntu_health_api.Controllers
       var tenantId = TenantHelper.GetTenantId(_httpContextAccessor.HttpContext);
       if (tenantId == null) return Forbid();
 
-      await _invoiceService.AddInvoiceAsync(invoice, tenantId);
-      var responseDto = _mapper.Map<InvoiceResponseDto>(invoice);
-      return CreatedAtAction(nameof(GetInvoiceById), new { id = responseDto.Id }, invoice);
+      var created = await _invoiceService.AddInvoiceAsync(invoice, tenantId);
+      return CreatedAtAction(nameof(GetInvoiceById), new { id = created.Id }, created);
     }
 
     [Authorize(Roles = "admin, receptionist")]

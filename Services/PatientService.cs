@@ -15,10 +15,6 @@ namespace ubuntu_health_api.Services
       cancellationToken.ThrowIfCancellationRequested();
 
       var patients = await _patientRepository.GetAllPatientsAsync(tenantId, cancellationToken);
-      if (patients == null || !patients.Any())
-      {
-        throw new KeyNotFoundException("No patients found.");
-      }
       return _mapper.Map<IEnumerable<PatientResponseDto>>(patients);
     }
 

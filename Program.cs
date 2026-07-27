@@ -138,6 +138,8 @@ builder.Services.AddScoped<IInvitationRepository, InvitationRepository>();
 builder.Services.AddScoped<IStaffService, StaffService>();
 builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
 builder.Services.AddScoped<IExportService, ExportService>();
+builder.Services.AddScoped<IImportRepository, ImportRepository>();
+builder.Services.AddScoped<IImportService, ImportService>();
 builder.Services.AddControllers();
 builder.Services.AddHealthChecks();
 

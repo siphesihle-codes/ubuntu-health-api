@@ -21,8 +21,8 @@ namespace ubuntu_health_api.Repositories
     public async Task<Invoice> GetInvoiceByIdAsync(int id, string tenantId)
     {
       var invoice = await _dbContext.Invoices
-        .FirstOrDefaultAsync(i => i.AppointmentId == id && i.TenantId == tenantId)
-        ?? throw new KeyNotFoundException($"Appointment with ID {id} was not found.");
+        .FirstOrDefaultAsync(i => i.Id == id && i.TenantId == tenantId)
+        ?? throw new KeyNotFoundException($"Invoice with ID {id} was not found.");
       return invoice;
     }
 
@@ -40,9 +40,13 @@ namespace ubuntu_health_api.Repositories
       .FirstOrDefaultAsync(e => e.Id == invoice.Id && e.TenantId == tenantId)
       ?? throw new InvalidOperationException("Invoice not found");
 
+      existing.PatientId = invoice.PatientId;
+      existing.PatientFirstName = invoice.PatientFirstName;
+      existing.PatientLastName = invoice.PatientLastName;
       existing.TotalAmount = invoice.TotalAmount;
       existing.Status = invoice.Status;
       existing.Notes = invoice.Notes;
+      existing.DueDate = invoice.DueDate;
       existing.UpdatedAt = DateTime.UtcNow;
 
       await _dbContext.SaveChangesAsync();
@@ -50,7 +54,9 @@ namespace ubuntu_health_api.Repositories
 
     public async Task DeleteInvoiceAsync(int id, string tenantId)
     {
-      var invoice = await _dbContext.Invoices.FindAsync(id);
+      var invoice = await _dbContext.Invoices
+        .FirstOrDefaultAsync(i => i.Id == id && i.TenantId == tenantId);
+
       if (invoice != null)
       {
         _dbContext.Invoices.Remove(invoice);

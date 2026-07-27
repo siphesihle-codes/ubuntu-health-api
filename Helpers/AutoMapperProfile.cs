@@ -12,22 +12,20 @@ namespace ubuntu_health_api.Helpers
       CreateMap<AppointmentCreateDto, Appointment>();
       CreateMap<AppointmentUpdateDto, Appointment>();
       CreateMap<Appointment, AppointmentResponseDto>();
-      CreateMap<AppointmentCreateDto, AppointmentResponseDto>();
 
       CreateMap<ClinicalNoteCreateDto, ClinicalNote>();
       CreateMap<ClinicalNoteUpdateDto, ClinicalNote>();
       CreateMap<ClinicalNote, ClinicalNoteResponseDto>();
-      CreateMap<ClinicalNoteCreateDto, ClinicalNoteResponseDto>();
 
       CreateMap<PrescriptionCreateDto, Prescription>();
       CreateMap<PrescriptionUpdateDto, Prescription>();
       CreateMap<Prescription, PrescriptionResponseDto>();
-      CreateMap<PrescriptionCreateDto, PrescriptionResponseDto>();
+      CreateMap<PrescriptionMedicationDto, PrescriptionMedication>();
+      CreateMap<PrescriptionMedication, PrescriptionMedicationDto>();
 
       CreateMap<InvoiceCreateDto, Invoice>();
       CreateMap<InvoiceUpdateDto, Invoice>();
       CreateMap<Invoice, InvoiceResponseDto>();
-      CreateMap<InvoiceCreateDto, InvoiceResponseDto>();
 
       // Model -> Response DTO
       CreateMap<Patient, PatientDto>().ReverseMap();

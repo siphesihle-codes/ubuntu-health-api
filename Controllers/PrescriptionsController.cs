@@ -54,16 +54,16 @@ namespace ubuntu_health_api.Controllers
     {
       if (_httpContextAccessor.HttpContext == null) return Forbid();
       var tenantId = TenantHelper.GetTenantId(_httpContextAccessor.HttpContext);
-      if (tenantId == null) return Forbid();
+      var prescriberId = CurrentUser.GetId(_httpContextAccessor.HttpContext);
+      if (tenantId == null || prescriberId == null) return Forbid();
 
       if (string.IsNullOrWhiteSpace(CurrentUser.GetLicenseNumber(_httpContextAccessor.HttpContext)))
       {
         throw new ValidationException("Add your medical license number to your profile before writing prescriptions");
       }
 
-      await _prescriptionService.AddPrescriptionAsync(prescription, tenantId);
-      var responseDto = _mapper.Map<PrescriptionResponseDto>(prescription);
-      return CreatedAtAction(nameof(GetPrescriptionById), new { id = responseDto.Id }, responseDto);
+      var created = await _prescriptionService.AddPrescriptionAsync(prescription, tenantId, prescriberId);
+      return CreatedAtAction(nameof(GetPrescriptionById), new { id = created.Id }, created);
     }
 
     [Authorize(Roles = "admin, doctor")]

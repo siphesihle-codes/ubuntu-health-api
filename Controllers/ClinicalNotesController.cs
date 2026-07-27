@@ -50,11 +50,11 @@ namespace ubuntu_health_api.Controllers
     {
       if (_httpContextAccessor.HttpContext == null) return Forbid();
       var tenantId = TenantHelper.GetTenantId(_httpContextAccessor.HttpContext);
-      if (tenantId == null) return Forbid();
+      var doctorId = CurrentUser.GetId(_httpContextAccessor.HttpContext);
+      if (tenantId == null || doctorId == null) return Forbid();
 
-      await _clinicalNoteService.AddClinicalNoteAsync(clinicalNote, tenantId);
-      var responseDto = _mapper.Map<ClinicalNoteResponseDto>(clinicalNote);
-      return CreatedAtAction(nameof(GetClinicalNoteById), new { id = responseDto.Id }, clinicalNote);
+      var created = await _clinicalNoteService.AddClinicalNoteAsync(clinicalNote, tenantId, doctorId);
+      return CreatedAtAction(nameof(GetClinicalNoteById), new { id = created.Id }, created);
     }
 
     [Authorize(Roles = "admin,doctor,nurse")]
@@ -79,10 +79,10 @@ namespace ubuntu_health_api.Controllers
       var tenantId = TenantHelper.GetTenantId(_httpContextAccessor.HttpContext);
       if (tenantId == null) return Forbid();
 
-      var existingClinicalNote = await _clinicalNoteService.UpdateClinicalNoteAsync(id, clinicalNote, tenantId);
-      if (existingClinicalNote == null) return NotFound();
+      var updated = await _clinicalNoteService.UpdateClinicalNoteAsync(id, clinicalNote, tenantId);
+      if (updated == null) return NotFound();
 
-      return NoContent();
+      return Ok(updated);
     }
   }
 }

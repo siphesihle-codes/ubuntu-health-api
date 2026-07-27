@@ -1,13 +1,18 @@
 using AutoMapper;
+using Microsoft.AspNetCore.Identity;
 using ubuntu_health_api.Models;
 using ubuntu_health_api.Models.DTO;
 using ubuntu_health_api.Repositories;
 
 namespace ubuntu_health_api.Services
 {
-  public class PrescriptionService(IPrescriptionRepository prescriptionRepository, IMapper mapper) : IPrescriptionService
+  public class PrescriptionService(
+    IPrescriptionRepository prescriptionRepository,
+    UserManager<ApplicationUser> userManager,
+    IMapper mapper) : IPrescriptionService
   {
     private readonly IPrescriptionRepository _prescriptionRepository = prescriptionRepository;
+    private readonly UserManager<ApplicationUser> _userManager = userManager;
     private readonly IMapper _mapper = mapper;
 
     public async Task<IEnumerable<PrescriptionResponseDto>> GetAllPrescriptionsAsync(string tenantId)
@@ -24,10 +29,16 @@ namespace ubuntu_health_api.Services
       return _mapper.Map<PrescriptionResponseDto>(prescription);
     }
 
-    public async Task<PrescriptionResponseDto> AddPrescriptionAsync(PrescriptionCreateDto createDto, string tenantId)
+    public async Task<PrescriptionResponseDto> AddPrescriptionAsync(PrescriptionCreateDto createDto, string tenantId, string prescriberId)
     {
+      var prescriber = await _userManager.FindByIdAsync(prescriberId)
+        ?? throw new KeyNotFoundException("Prescriber not found");
+
       var prescription = _mapper.Map<Prescription>(createDto);
       prescription.TenantId = tenantId;
+      prescription.PrescriberId = prescriber.Id;
+      prescription.PrescriberName = $"{prescriber.FirstName} {prescriber.LastName}".Trim();
+      prescription.PrescriberLicenseNumber = prescriber.LicenseNumber;
       prescription.CreatedAt = DateTime.UtcNow;
       prescription.UpdatedAt = DateTime.UtcNow;
 

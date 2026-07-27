@@ -78,9 +78,8 @@ namespace ubuntu_health_api.Controllers
       var tenantId = TenantHelper.GetTenantId(_httpContextAccessor.HttpContext);
       if (tenantId == null) return Forbid();
 
-      await _appointmentService.AddAppointmentAsync(appointment, tenantId);
-      var responseDto = _mapper.Map<AppointmentResponseDto>(appointment);
-      return CreatedAtAction(nameof(GetAppointmentById), new { id = responseDto.Id }, responseDto);
+      var created = await _appointmentService.AddAppointmentAsync(appointment, tenantId);
+      return CreatedAtAction(nameof(GetAppointmentById), new { id = created.Id }, created);
     }
 
     [Authorize(Roles = "admin,doctor,nurse,receptionist")]
