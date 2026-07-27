@@ -38,7 +38,7 @@ namespace ubuntu_health_api.Middleware
       {
         case ValidationException validationEx:
           response.StatusCode = (int)HttpStatusCode.BadRequest;
-          response.Message = "Validation failed";
+          response.Message = validationEx.Errors.Count > 0 ? "Validation failed" : validationEx.Message;
           response.Details = validationEx.Errors;
           break;
 

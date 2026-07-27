@@ -11,10 +11,32 @@ namespace ubuntu_health_api.Data
     public DbSet<Prescription> Prescriptions { get; set; }
     public DbSet<Invoice> Invoices { get; set; }
     public DbSet<ClinicalNote> ClinicalNotes { get; set; }
+    public DbSet<Practice> Practices { get; set; }
+    public DbSet<Invitation> Invitations { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
       base.OnModelCreating(modelBuilder);
+
+      // ------ ApplicationUser ------
+      modelBuilder.Entity<ApplicationUser>(entity =>
+      {
+        entity.HasIndex(u => u.TenantId);
+        entity.Property(u => u.IsActive).HasDefaultValue(true);
+      });
+
+      // ------ Practice ------
+      modelBuilder.Entity<Practice>(entity =>
+      {
+        entity.HasIndex(p => p.TenantId).IsUnique();
+      });
+
+      // ------ Invitation ------
+      modelBuilder.Entity<Invitation>(entity =>
+      {
+        entity.HasIndex(i => i.TokenHash).IsUnique();
+        entity.HasIndex(i => new { i.TenantId, i.Email });
+      });
 
       // ------ Patient ------
       modelBuilder.Entity<Patient>(entity =>

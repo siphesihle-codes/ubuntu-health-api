@@ -9,6 +9,8 @@ using ubuntu_health_api.Data;
 using ubuntu_health_api.Models;
 using Microsoft.OpenApi.Models;
 using ubuntu_health_api.Helpers;
+using ubuntu_health_api.Middleware;
+using System.Security.Claims;
 using DotNetEnv;
 
 DotNetEnv.Env.Load();
@@ -22,7 +24,16 @@ builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
+{
+  options.Password.RequiredLength = 12;
+  options.Password.RequireDigit = false;
+  options.Password.RequireLowercase = false;
+  options.Password.RequireUppercase = false;
+  options.Password.RequireNonAlphanumeric = false;
+  options.Password.RequiredUniqueChars = 4;
+  options.User.RequireUniqueEmail = true;
+})
     .AddEntityFrameworkStores<AppDbContext>()
     .AddDefaultTokenProviders();
 
@@ -59,6 +70,27 @@ builder.Services.AddAuthentication(options =>
       }
 
       return Task.CompletedTask;
+    },
+
+    OnTokenValidated = async context =>
+    {
+      var userManager = context.HttpContext.RequestServices
+        .GetRequiredService<UserManager<ApplicationUser>>();
+
+      var userId = context.Principal?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+      var user = string.IsNullOrEmpty(userId) ? null : await userManager.FindByIdAsync(userId);
+
+      if (user == null || !user.IsActive)
+      {
+        context.Fail("This account is no longer active");
+        return;
+      }
+
+      if (!string.IsNullOrWhiteSpace(user.LicenseNumber))
+      {
+        context.Principal?.AddIdentity(new ClaimsIdentity(
+          [new Claim(CurrentUser.LicenseNumberClaim, user.LicenseNumber)]));
+      }
     }
   };
 });
@@ -98,6 +130,9 @@ builder.Services.AddScoped<IInvoiceService, InvoiceService>();
 builder.Services.AddScoped<IInvoiceRepository, InvoiceRepository>();
 builder.Services.AddScoped<IClinicalNoteService, ClinicalNoteService>();
 builder.Services.AddScoped<IClinicalNoteRepository, ClinicalNoteRepository>();
+builder.Services.AddScoped<IPracticeRepository, PracticeRepository>();
+builder.Services.AddScoped<IInvitationRepository, InvitationRepository>();
+builder.Services.AddScoped<IStaffService, StaffService>();
 builder.Services.AddControllers();
 builder.Services.AddHealthChecks();
 
@@ -131,6 +166,7 @@ app.UseSwagger();
 // Enable Swagger UI middleware
 app.UseSwaggerUI(options => options.SwaggerEndpoint("/swagger/v1/swagger.json", "Ubuntu Health API v1"));
 app.UseCors("AllowConfiguredOrigins");
+app.UseMiddleware<GlobalExceptionMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

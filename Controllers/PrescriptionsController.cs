@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using ubuntu_health_api.Helpers;
 using ubuntu_health_api.Models.DTO;
 using AutoMapper;
+using ubuntu_health_api.Exceptions;
 
 namespace ubuntu_health_api.Controllers
 {
@@ -54,6 +55,11 @@ namespace ubuntu_health_api.Controllers
       if (_httpContextAccessor.HttpContext == null) return Forbid();
       var tenantId = TenantHelper.GetTenantId(_httpContextAccessor.HttpContext);
       if (tenantId == null) return Forbid();
+
+      if (string.IsNullOrWhiteSpace(CurrentUser.GetLicenseNumber(_httpContextAccessor.HttpContext)))
+      {
+        throw new ValidationException("Add your medical license number to your profile before writing prescriptions");
+      }
 
       await _prescriptionService.AddPrescriptionAsync(prescription, tenantId);
       var responseDto = _mapper.Map<PrescriptionResponseDto>(prescription);
