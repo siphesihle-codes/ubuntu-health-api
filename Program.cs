@@ -134,6 +134,7 @@ builder.Services.AddScoped<IPracticeRepository, PracticeRepository>();
 builder.Services.AddScoped<IInvitationRepository, InvitationRepository>();
 builder.Services.AddScoped<IStaffService, StaffService>();
 builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
+builder.Services.AddScoped<IExportService, ExportService>();
 builder.Services.AddControllers();
 builder.Services.AddHealthChecks();
 

@@ -22,7 +22,7 @@ namespace ubuntu_health_api.Middleware
     {
       var tenantId = TenantHelper.GetTenantId(context);
 
-      if (string.IsNullOrEmpty(tenantId) || IsAllowed(context.Request.Path))
+      if (string.IsNullOrEmpty(tenantId) || IsAllowed(context.Request))
       {
         await _next(context);
         return;
@@ -35,16 +35,24 @@ namespace ubuntu_health_api.Middleware
         return;
       }
 
-      _logger.LogInformation("Blocked {Path} for tenant {TenantId} because the free trial ended",
-        context.Request.Path, tenantId);
+      _logger.LogInformation("Blocked {Method} {Path} for tenant {TenantId} because the free trial ended",
+        context.Request.Method, context.Request.Path, tenantId);
 
       await WriteTrialExpiredAsync(context);
     }
 
-    private static bool IsAllowed(PathString path)
+    private static bool IsAllowed(HttpRequest request)
     {
-      return !path.StartsWithSegments("/api")
-        || AllowedPaths.Any(allowed => path.StartsWithSegments(allowed));
+      return !request.Path.StartsWithSegments("/api")
+        || IsReadOnly(request.Method)
+        || AllowedPaths.Any(allowed => request.Path.StartsWithSegments(allowed));
+    }
+
+    private static bool IsReadOnly(string method)
+    {
+      return HttpMethods.IsGet(method)
+        || HttpMethods.IsHead(method)
+        || HttpMethods.IsOptions(method);
     }
 
     private static async Task WriteTrialExpiredAsync(HttpContext context)
@@ -52,7 +60,7 @@ namespace ubuntu_health_api.Middleware
       var response = new ErrorResponse
       {
         StatusCode = (int)HttpStatusCode.PaymentRequired,
-        Message = $"Your {SubscriptionPlans.TrialLengthDays}-day free trial has ended. Upgrade to a paid plan to continue."
+        Message = $"Your {SubscriptionPlans.TrialLengthDays}-day free trial has ended. Your records stay readable and exportable, but changes need a paid plan."
       };
 
       context.Response.StatusCode = response.StatusCode;
