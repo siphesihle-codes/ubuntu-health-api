@@ -7,6 +7,8 @@ namespace ubuntu_health_api.Middleware
 {
   public class TrialExpiryMiddleware
   {
+    private const string PasswordResetSuffix = "/password-reset";
+
     private static readonly string[] AllowedPaths = ["/api/auth", "/api/subscription", "/api/invitations"];
 
     private readonly RequestDelegate _next;
@@ -45,7 +47,8 @@ namespace ubuntu_health_api.Middleware
     {
       return !request.Path.StartsWithSegments("/api")
         || IsReadOnly(request.Method)
-        || AllowedPaths.Any(allowed => request.Path.StartsWithSegments(allowed));
+        || AllowedPaths.Any(allowed => request.Path.StartsWithSegments(allowed))
+        || request.Path.Value?.EndsWith(PasswordResetSuffix, StringComparison.OrdinalIgnoreCase) == true;
     }
 
     private static bool IsReadOnly(string method)
