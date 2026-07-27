@@ -5,6 +5,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using ubuntu_health_api.Helpers;
 using ubuntu_health_api.Models;
 using ubuntu_health_api.Models.DTO;
 
@@ -350,15 +351,32 @@ namespace ubuntu_health_api.Controllers
 
       var token = GenerateJwtToken(authClaims);
 
+      Response.Cookies.Append(
+        AuthCookie.Name,
+        new JwtSecurityTokenHandler().WriteToken(token),
+        AuthCookie.CreateOptions(token.ValidTo)
+      );
+
       return Ok(new AuthResponseDto
       {
         IsSuccess = true,
-        Token = new JwtSecurityTokenHandler().WriteToken(token),
         RefreshToken = null,
         Message = "Login successful",
         Email = user.Email,
         TenantId = user.TenantId,
         Roles = userRoles,
+      });
+    }
+
+    [HttpPost("logout")]
+    public IActionResult Logout()
+    {
+      Response.Cookies.Delete(AuthCookie.Name, AuthCookie.CreateOptions());
+
+      return Ok(new AuthResponseDto
+      {
+        IsSuccess = true,
+        Message = "Logout successful"
       });
     }
 

@@ -48,6 +48,19 @@ builder.Services.AddAuthentication(options =>
           Encoding.UTF8.GetBytes(builder.Configuration["JWT:Secret"] ??
           throw new InvalidOperationException("JWT:Secret is not configured")))
   };
+
+  options.Events = new JwtBearerEvents
+  {
+    OnMessageReceived = context =>
+    {
+      if (!context.Request.Headers.ContainsKey("Authorization"))
+      {
+        context.Token = context.Request.Cookies[AuthCookie.Name];
+      }
+
+      return Task.CompletedTask;
+    }
+  };
 });
 builder.Services.AddAuthorization();
 // Add Swagger/OpenAPI services
@@ -60,14 +73,18 @@ builder.Services.AddSwaggerGen(options =>
     Version = "v1"
   });
 });
+var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
+    ?? throw new InvalidOperationException("Cors:AllowedOrigins is not configured");
+
 builder.Services.AddCors(options =>
 {
-  options.AddPolicy("AllowAllOrigins",
-    builder =>
+  options.AddPolicy("AllowConfiguredOrigins",
+    policy =>
     {
-      builder.AllowAnyOrigin()
+      policy.WithOrigins(allowedOrigins)
               .AllowAnyMethod()
-              .AllowAnyHeader();
+              .AllowAnyHeader()
+              .AllowCredentials();
     });
 });
 
@@ -113,7 +130,7 @@ app.UseHttpsRedirection();
 app.UseSwagger();
 // Enable Swagger UI middleware
 app.UseSwaggerUI(options => options.SwaggerEndpoint("/swagger/v1/swagger.json", "Ubuntu Health API v1"));
-app.UseCors("AllowAllOrigins");
+app.UseCors("AllowConfiguredOrigins");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
