@@ -91,7 +91,7 @@ namespace ubuntu_health_api.Controllers
           Name = request.PracticeName,
           Phone = request.PracticePhone,
           SubscriptionPlan = request.SubscriptionPlan,
-          TrialEndsAt = SubscriptionPlans.TrialEndFor(request.SubscriptionPlan),
+          TrialEndsAt = SubscriptionPlans.TrialEnd(),
           CreatedAt = DateTime.UtcNow,
           UpdatedAt = DateTime.UtcNow
         });

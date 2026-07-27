@@ -11,13 +11,15 @@ namespace ubuntu_health_api.Services
   public class StaffService(
     UserManager<ApplicationUser> userManager,
     IInvitationRepository invitationRepository,
-    IPracticeRepository practiceRepository) : IStaffService
+    IPracticeRepository practiceRepository,
+    ISubscriptionService subscriptionService) : IStaffService
   {
     private const int InvitationLifetimeDays = 7;
 
     private readonly UserManager<ApplicationUser> _userManager = userManager;
     private readonly IInvitationRepository _invitationRepository = invitationRepository;
     private readonly IPracticeRepository _practiceRepository = practiceRepository;
+    private readonly ISubscriptionService _subscriptionService = subscriptionService;
 
     public async Task<IEnumerable<StaffMemberDto>> GetStaffAsync(string tenantId, CancellationToken cancellationToken = default)
     {
@@ -68,6 +70,12 @@ namespace ubuntu_health_api.Services
       if (currentRoles.Count == 1 && currentRoles[0] == role)
       {
         return await MapStaffMemberAsync(staffMember);
+      }
+
+      var takesPractitionerSeat = Roles.Prescribing.Contains(role) && !currentRoles.Any(Roles.Prescribing.Contains);
+      if (takesPractitionerSeat)
+      {
+        await _subscriptionService.EnsurePractitionerSeatAvailableAsync(tenantId, cancellationToken);
       }
 
       if (currentRoles.Count > 0)
@@ -172,6 +180,11 @@ namespace ubuntu_health_api.Services
       if (existingInvitation != null)
       {
         throw new ConflictException("That email already has a pending invitation");
+      }
+
+      if (Roles.Prescribing.Contains(role))
+      {
+        await _subscriptionService.EnsurePractitionerSeatAvailableAsync(tenantId, cancellationToken);
       }
 
       var token = InvitationToken.Create();

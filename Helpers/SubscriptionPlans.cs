@@ -3,22 +3,32 @@ namespace ubuntu_health_api.Helpers
   public static class SubscriptionPlans
   {
     public const string Free = "Free";
-    public const string Basic = "Basic";
-    public const string Standard = "Standard";
-    public const string Premium = "Premium";
+    public const string Solo = "Solo";
+    public const string Practice = "Practice";
+    public const string Clinic = "Clinic";
 
     public const int TrialLengthDays = 30;
 
-    public static readonly string[] All = [Free, Basic, Standard, Premium];
+    public const int SoloSeats = 1;
+    public const int PracticeSeats = 3;
+    public const int ClinicSeats = 8;
 
-    public static readonly string[] Paid = [Basic, Standard, Premium];
+    public static readonly string[] All = [Free, Solo, Practice, Clinic];
+
+    public static readonly string[] Paid = [Solo, Practice, Clinic];
 
     public static bool IsKnown(string plan) => All.Contains(plan);
 
     public static bool IsPaid(string plan) => Paid.Contains(plan);
 
-    public static DateTime? TrialEndFor(string plan) =>
-      plan == Free ? DateTime.UtcNow.AddDays(TrialLengthDays) : null;
+    public static int PractitionerSeats(string plan) => plan switch
+    {
+      Solo => SoloSeats,
+      Practice => PracticeSeats,
+      _ => ClinicSeats
+    };
+
+    public static DateTime TrialEnd() => DateTime.UtcNow.AddDays(TrialLengthDays);
 
     public static bool IsTrialExpired(DateTime? trialEndsAt) =>
       trialEndsAt.HasValue && trialEndsAt.Value <= DateTime.UtcNow;
