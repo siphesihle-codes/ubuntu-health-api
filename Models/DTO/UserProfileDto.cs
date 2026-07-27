@@ -15,6 +15,9 @@ namespace ubuntu_health_api.Models.DTO
     public IEnumerable<string> Roles { get; set; } = [];
     public string? PracticeName { get; set; }
     public string? SubscriptionPlan { get; set; }
+    public DateTime? TrialEndsAt { get; set; }
+    public int TrialDaysRemaining { get; set; }
+    public bool IsTrialExpired { get; set; }
     public bool RequiresProfessionalDetails { get; set; }
   }
 }

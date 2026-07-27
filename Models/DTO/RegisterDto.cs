@@ -30,7 +30,7 @@ namespace ubuntu_health_api.Models.DTO
     public string? PracticePhone { get; set; }
 
     [Required(ErrorMessage = "Subscription plan is required")]
-    [RegularExpression(@"^(Basic|Premium|Enterprise)$", ErrorMessage = "Subscription plan must be Basic, Premium, or Enterprise")]
+    [RegularExpression(@"^(Free|Basic|Standard|Premium)$", ErrorMessage = "Subscription plan must be Free, Basic, Standard, or Premium")]
     public required string SubscriptionPlan { get; set; }
   }
 }

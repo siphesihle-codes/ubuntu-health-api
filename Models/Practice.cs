@@ -7,6 +7,7 @@ namespace ubuntu_health_api.Models
     public required string Name { get; set; }
     public string? Phone { get; set; }
     public required string SubscriptionPlan { get; set; }
+    public DateTime? TrialEndsAt { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
   }

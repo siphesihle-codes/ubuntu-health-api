@@ -91,6 +91,7 @@ namespace ubuntu_health_api.Controllers
           Name = request.PracticeName,
           Phone = request.PracticePhone,
           SubscriptionPlan = request.SubscriptionPlan,
+          TrialEndsAt = SubscriptionPlans.TrialEndFor(request.SubscriptionPlan),
           CreatedAt = DateTime.UtcNow,
           UpdatedAt = DateTime.UtcNow
         });
@@ -206,6 +207,9 @@ namespace ubuntu_health_api.Controllers
         Roles = roles,
         PracticeName = practice?.Name,
         SubscriptionPlan = practice?.SubscriptionPlan,
+        TrialEndsAt = practice?.TrialEndsAt,
+        TrialDaysRemaining = SubscriptionPlans.TrialDaysRemaining(practice?.TrialEndsAt),
+        IsTrialExpired = SubscriptionPlans.IsTrialExpired(practice?.TrialEndsAt),
         RequiresProfessionalDetails =
           roles.Any(Roles.Prescribing.Contains) && string.IsNullOrWhiteSpace(user.LicenseNumber)
       });

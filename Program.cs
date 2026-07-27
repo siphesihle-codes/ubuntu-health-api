@@ -133,6 +133,7 @@ builder.Services.AddScoped<IClinicalNoteRepository, ClinicalNoteRepository>();
 builder.Services.AddScoped<IPracticeRepository, PracticeRepository>();
 builder.Services.AddScoped<IInvitationRepository, InvitationRepository>();
 builder.Services.AddScoped<IStaffService, StaffService>();
+builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
 builder.Services.AddControllers();
 builder.Services.AddHealthChecks();
 
@@ -168,6 +169,7 @@ app.UseSwaggerUI(options => options.SwaggerEndpoint("/swagger/v1/swagger.json", 
 app.UseCors("AllowConfiguredOrigins");
 app.UseMiddleware<GlobalExceptionMiddleware>();
 app.UseAuthentication();
+app.UseMiddleware<TrialExpiryMiddleware>();
 app.UseAuthorization();
 app.MapControllers();
 app.MapHealthChecks("/healthz");
