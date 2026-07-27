@@ -7,6 +7,7 @@ namespace ubuntu_health_api.Repositories
   {
     Task<PagedResult<Appointment>> GetPaginatedAppointmentsAsync(string tenantId, int page, int pageSize);
     Task<IEnumerable<Appointment>> GetAllAppointmentsAsync(string tenantId);
+    Task<IEnumerable<Appointment>> GetAppointmentsByDateRangeAsync(string tenantId, string fromDate, string toDate);
     Task<Appointment> GetAppointmentByIdAsync(int id, string tenantId);
     Task AddAppointmentAsync(Appointment appointment);
     Task UpdateAppointmentAsync(Appointment appointment, string tenantId);

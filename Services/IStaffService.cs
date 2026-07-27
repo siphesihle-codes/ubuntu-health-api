@@ -5,6 +5,9 @@ namespace ubuntu_health_api.Services
   public interface IStaffService
   {
     Task<IEnumerable<StaffMemberDto>> GetStaffAsync(string tenantId, CancellationToken cancellationToken = default);
+    Task<IEnumerable<PractitionerDto>> GetPractitionersAsync(string tenantId, CancellationToken cancellationToken = default);
+    Task<PasswordResetLinkDto> CreatePasswordResetAsync(string actingUserId, string staffId, string tenantId, CancellationToken cancellationToken = default);
+    Task ResetPasswordAsync(ResetPasswordDto resetDto, CancellationToken cancellationToken = default);
     Task<StaffMemberDto> UpdateStaffRoleAsync(string actingUserId, string staffId, string role, string tenantId, CancellationToken cancellationToken = default);
     Task<StaffMemberDto> SetStaffActiveAsync(string actingUserId, string staffId, bool isActive, string tenantId, CancellationToken cancellationToken = default);
     Task<IEnumerable<InvitationDto>> GetInvitationsAsync(string tenantId, CancellationToken cancellationToken = default);

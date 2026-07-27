@@ -6,7 +6,7 @@ using ubuntu_health_api.Services;
 
 namespace ubuntu_health_api.Controllers
 {
-  [Authorize(Roles = Roles.Admin)]
+  [Authorize]
   [ApiController]
   [Route("api/[controller]")]
   public class StaffController(IStaffService staffService,
@@ -17,6 +17,7 @@ namespace ubuntu_health_api.Controllers
     private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
     private readonly ILogger<StaffController> _logger = logger;
 
+    [Authorize(Roles = Roles.Admin)]
     [HttpGet]
     public async Task<ActionResult<IEnumerable<StaffMemberDto>>> GetStaff(CancellationToken cancellationToken)
     {
@@ -27,6 +28,32 @@ namespace ubuntu_health_api.Controllers
       return Ok(staff);
     }
 
+    [Authorize(Roles = "admin,doctor,nurse,receptionist")]
+    [HttpGet("practitioners")]
+    public async Task<ActionResult<IEnumerable<PractitionerDto>>> GetPractitioners(CancellationToken cancellationToken)
+    {
+      var tenantId = GetTenantId();
+      if (tenantId == null) return Forbid();
+
+      var practitioners = await _staffService.GetPractitionersAsync(tenantId, cancellationToken);
+      return Ok(practitioners);
+    }
+
+    [Authorize(Roles = Roles.Admin)]
+    [HttpPost("{id}/password-reset")]
+    public async Task<ActionResult<PasswordResetLinkDto>> CreatePasswordReset(string id, CancellationToken cancellationToken)
+    {
+      var tenantId = GetTenantId();
+      var actingUserId = GetActingUserId();
+      if (tenantId == null || actingUserId == null) return Forbid();
+
+      var reset = await _staffService.CreatePasswordResetAsync(actingUserId, id, tenantId, cancellationToken);
+      _logger.LogInformation("Password reset link created for staff member {StaffId} in tenant {TenantId}", id, tenantId);
+
+      return Ok(reset);
+    }
+
+    [Authorize(Roles = Roles.Admin)]
     [HttpPut("{id}/role")]
     public async Task<ActionResult<StaffMemberDto>> UpdateStaffRole(string id, [FromBody] UpdateStaffRoleDto request, CancellationToken cancellationToken)
     {
@@ -42,6 +69,7 @@ namespace ubuntu_health_api.Controllers
       return Ok(staffMember);
     }
 
+    [Authorize(Roles = Roles.Admin)]
     [HttpPut("{id}/status")]
     public async Task<ActionResult<StaffMemberDto>> UpdateStaffStatus(string id, [FromBody] UpdateStaffStatusDto request, CancellationToken cancellationToken)
     {
@@ -55,6 +83,7 @@ namespace ubuntu_health_api.Controllers
       return Ok(staffMember);
     }
 
+    [Authorize(Roles = Roles.Admin)]
     [HttpGet("invitations")]
     public async Task<ActionResult<IEnumerable<InvitationDto>>> GetInvitations(CancellationToken cancellationToken)
     {
@@ -65,6 +94,7 @@ namespace ubuntu_health_api.Controllers
       return Ok(invitations);
     }
 
+    [Authorize(Roles = Roles.Admin)]
     [HttpPost("invitations")]
     public async Task<ActionResult<InvitationCreatedDto>> CreateInvitation([FromBody] CreateInvitationDto request, CancellationToken cancellationToken)
     {
@@ -80,6 +110,7 @@ namespace ubuntu_health_api.Controllers
       return Ok(invitation);
     }
 
+    [Authorize(Roles = Roles.Admin)]
     [HttpDelete("invitations/{id}")]
     public async Task<ActionResult> RevokeInvitation(int id, CancellationToken cancellationToken)
     {

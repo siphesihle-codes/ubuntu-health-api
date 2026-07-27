@@ -15,6 +15,7 @@ namespace ubuntu_health_api.Services
     ISubscriptionService subscriptionService) : IStaffService
   {
     private const int InvitationLifetimeDays = 7;
+    private const int PasswordResetLifetimeHours = 24;
 
     private readonly UserManager<ApplicationUser> _userManager = userManager;
     private readonly IInvitationRepository _invitationRepository = invitationRepository;
@@ -36,6 +37,81 @@ namespace ubuntu_health_api.Services
       }
 
       return staff;
+    }
+
+    public async Task<IEnumerable<PractitionerDto>> GetPractitionersAsync(string tenantId, CancellationToken cancellationToken = default)
+    {
+      var users = await _userManager.Users
+        .Where(u => u.TenantId == tenantId && u.IsActive)
+        .OrderBy(u => u.FirstName)
+        .ThenBy(u => u.LastName)
+        .ToListAsync(cancellationToken);
+
+      var practitioners = new List<PractitionerDto>();
+      foreach (var user in users)
+      {
+        var roles = await _userManager.GetRolesAsync(user);
+        if (!roles.Any(Roles.Prescribing.Contains)) continue;
+
+        practitioners.Add(new PractitionerDto
+        {
+          Id = user.Id,
+          Name = $"{user.FirstName} {user.LastName}".Trim(),
+          Specialty = user.Specialty
+        });
+      }
+
+      return practitioners;
+    }
+
+    public async Task<PasswordResetLinkDto> CreatePasswordResetAsync(string actingUserId, string staffId, string tenantId, CancellationToken cancellationToken = default)
+    {
+      cancellationToken.ThrowIfCancellationRequested();
+
+      var actingUser = await GetTenantUserAsync(actingUserId, tenantId);
+      var staffMember = await GetTenantUserAsync(staffId, tenantId);
+
+      var staffRoles = await _userManager.GetRolesAsync(staffMember);
+      if (staffRoles.Contains(Roles.Admin) && !actingUser.IsOwner)
+      {
+        throw new UnauthorizedAccessException("Only the practice owner can reset an administrator's password");
+      }
+
+      if (!staffMember.IsActive)
+      {
+        throw new ValidationException("Reactivate this account before resetting its password");
+      }
+
+      var token = await _userManager.GeneratePasswordResetTokenAsync(staffMember);
+
+      return new PasswordResetLinkDto
+      {
+        UserId = staffMember.Id,
+        Email = staffMember.Email ?? string.Empty,
+        Token = token,
+        ExpiresAt = DateTime.UtcNow.AddHours(PasswordResetLifetimeHours)
+      };
+    }
+
+    public async Task ResetPasswordAsync(ResetPasswordDto resetDto, CancellationToken cancellationToken = default)
+    {
+      cancellationToken.ThrowIfCancellationRequested();
+
+      var user = await _userManager.FindByIdAsync(resetDto.UserId)
+        ?? throw new ValidationException("That reset link is no longer valid");
+
+      if (!user.IsActive)
+      {
+        throw new ValidationException("This account has been deactivated. Contact your practice administrator.");
+      }
+
+      var result = await _userManager.ResetPasswordAsync(user, resetDto.Token, resetDto.Password);
+      if (!result.Succeeded)
+      {
+        throw new ValidationException(string.Join(", ", result.Errors.Select(e => e.Description)));
+      }
+
+      await _userManager.UpdateSecurityStampAsync(user);
     }
 
     public async Task<StaffMemberDto> UpdateStaffRoleAsync(string actingUserId, string staffId, string role, string tenantId, CancellationToken cancellationToken = default)

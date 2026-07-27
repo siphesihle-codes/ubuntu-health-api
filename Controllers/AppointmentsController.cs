@@ -34,6 +34,27 @@ namespace ubuntu_health_api.Controllers
     }
 
     [Authorize(Roles = "admin,doctor,nurse,receptionist")]
+    [HttpGet("diary")]
+    public async Task<ActionResult<IEnumerable<AppointmentResponseDto>>> GetDiary(
+      [FromQuery] string from,
+      [FromQuery] string to
+    )
+    {
+      if (_httpContextAccessor.HttpContext == null) return Forbid();
+      var tenantId = TenantHelper.GetTenantId(_httpContextAccessor.HttpContext);
+      if (tenantId == null) return Forbid();
+
+      if (!DateOnly.TryParse(from, out _) || !DateOnly.TryParse(to, out _))
+      {
+        return BadRequest(new { message = "from and to must be dates in YYYY-MM-DD format" });
+      }
+
+      var diary = await _appointmentService.GetDiaryAsync(tenantId, from, to);
+
+      return Ok(diary);
+    }
+
+    [Authorize(Roles = "admin,doctor,nurse,receptionist")]
     [HttpGet("{id}")]
     public async Task<ActionResult<AppointmentResponseDto>> GetAppointmentById(int id)
     {

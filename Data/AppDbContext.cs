@@ -50,6 +50,7 @@ namespace ubuntu_health_api.Data
       {
         entity.HasKey(a => a.Id);
         entity.HasIndex(a => new { a.TenantId });
+        entity.HasIndex(a => new { a.TenantId, a.AppointmentDate });
         entity.HasOne(a => a.Patient)
               .WithMany(p => p.Appointments)
               .HasForeignKey(a => a.PatientId)

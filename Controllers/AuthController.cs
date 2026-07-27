@@ -9,6 +9,7 @@ using ubuntu_health_api.Helpers;
 using ubuntu_health_api.Models;
 using ubuntu_health_api.Models.DTO;
 using ubuntu_health_api.Repositories;
+using ubuntu_health_api.Services;
 
 namespace ubuntu_health_api.Controllers
 {
@@ -18,10 +19,12 @@ namespace ubuntu_health_api.Controllers
   public class AuthController(
     UserManager<ApplicationUser> userManager,
     IPracticeRepository practiceRepository,
+    IStaffService staffService,
     IConfiguration configuration) : ControllerBase
   {
     private readonly UserManager<ApplicationUser> _userManager = userManager;
     private readonly IPracticeRepository _practiceRepository = practiceRepository;
+    private readonly IStaffService _staffService = staffService;
     private readonly IConfiguration _configuration = configuration;
 
     [HttpPost("register")]
@@ -174,6 +177,20 @@ namespace ubuntu_health_api.Controllers
       {
         IsSuccess = true,
         Message = "Logout successful"
+      });
+    }
+
+    [HttpPost("reset-password")]
+    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto request, CancellationToken cancellationToken)
+    {
+      if (!ModelState.IsValid) return BadRequest(ModelState);
+
+      await _staffService.ResetPasswordAsync(request, cancellationToken);
+
+      return Ok(new AuthResponseDto
+      {
+        IsSuccess = true,
+        Message = "Password updated. Please sign in."
       });
     }
 

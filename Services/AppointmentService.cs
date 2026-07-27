@@ -30,6 +30,12 @@ namespace ubuntu_health_api.Services
       return _mapper.Map<IEnumerable<AppointmentResponseDto>>(appointments);
     }
 
+    public async Task<IEnumerable<AppointmentResponseDto>> GetDiaryAsync(string tenantId, string fromDate, string toDate)
+    {
+      var appointments = await _appointmentRepository.GetAppointmentsByDateRangeAsync(tenantId, fromDate, toDate);
+      return _mapper.Map<IEnumerable<AppointmentResponseDto>>(appointments);
+    }
+
     public async Task<AppointmentResponseDto> GetAppointmentByIdAsync(int id, string tenantId)
     {
       var appointment = await _appointmentRepository.GetAppointmentByIdAsync(id, tenantId)

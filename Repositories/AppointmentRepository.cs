@@ -37,6 +37,17 @@ namespace ubuntu_health_api.Repositories
           .ToListAsync();
     }
 
+    public async Task<IEnumerable<Appointment>> GetAppointmentsByDateRangeAsync(string tenantId, string fromDate, string toDate)
+    {
+      return await _dbContext.Appointments
+          .Where(a => a.TenantId == tenantId
+            && string.Compare(a.AppointmentDate, fromDate) >= 0
+            && string.Compare(a.AppointmentDate, toDate) <= 0)
+          .OrderBy(a => a.AppointmentDate)
+          .ThenBy(a => a.AppointmentTime)
+          .ToListAsync();
+    }
+
     public async Task<Appointment> GetAppointmentByIdAsync(int id, string tenantId)
     {
       var appointment = await _dbContext.Appointments
@@ -58,6 +69,8 @@ namespace ubuntu_health_api.Repositories
 
       existing.PatientFirstName = appointment.PatientFirstName;
       existing.PatientLastName = appointment.PatientLastName;
+      existing.PractitionerId = appointment.PractitionerId;
+      existing.PractitionerName = appointment.PractitionerName;
       existing.AppointmentDate = appointment.AppointmentDate;
       existing.AppointmentTime = appointment.AppointmentTime;
       existing.AppointmentType = appointment.AppointmentType;

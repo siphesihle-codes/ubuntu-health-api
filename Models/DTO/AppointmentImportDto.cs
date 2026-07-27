@@ -1,9 +1,7 @@
 namespace ubuntu_health_api.Models.DTO
 {
-  public class AppointmentResponseDto
+  public class AppointmentImportDto
   {
-    public int Id { get; set; }
-    public string? TenantId { get; set; }
     public int PatientId { get; set; }
     public string? PatientFirstName { get; set; }
     public string? PatientLastName { get; set; }
@@ -14,7 +12,5 @@ namespace ubuntu_health_api.Models.DTO
     public string? AppointmentType { get; set; }
     public string? Status { get; set; }
     public string? Notes { get; set; }
-    public DateTime CreatedAt { get; set; }
-    public DateTime UpdatedAt { get; set; }
   }
 }
